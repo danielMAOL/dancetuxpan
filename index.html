@@ -3,27 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR GLB Viewer - Oso</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.3.0/aframe.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.2.2/aframe-ar.min.js"></script>
+    <title>Visor 3D - Oso</title>
+    <!-- Importar model-viewer - más compatible con dispositivos móviles -->
+    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         body {
             margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
-        .info {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background-color: rgba(0,0,0,0.5);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 999;
-            font-size: 14px;
-            max-width: 80%;
+        
+        #container {
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
         }
+        
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+        }
+        
         .loading {
             position: fixed;
             top: 0;
@@ -40,6 +44,7 @@
             text-align: center;
             padding: 20px;
         }
+        
         .error-message {
             color: #ff6b6b;
             margin-top: 20px;
@@ -48,7 +53,8 @@
             border-radius: 5px;
             max-width: 80%;
         }
-        #startButton {
+        
+        button {
             padding: 12px 24px;
             background-color: #4285F4;
             color: white;
@@ -61,106 +67,58 @@
     </style>
 </head>
 <body>
-    <div class="loading" id="loadingScreen">
-        <h2>AR GLB Viewer</h2>
-        <p>Esta aplicación necesita acceso a tu cámara para mostrar el modelo 3D en realidad aumentada.</p>
-        <button id="startButton">Iniciar AR</button>
-        <div id="errorMessage" class="error-message" style="display: none;"></div>
+    <div id="container">
+        <!-- Model viewer con soporte AR -->
+        <model-viewer 
+            src="./oso.glb" 
+            alt="Modelo 3D Oso" 
+            auto-rotate 
+            camera-controls 
+            ar 
+            ar-modes="webxr scene-viewer quick-look" 
+            environment-image="neutral" 
+            shadow-intensity="1" 
+            exposure="1" 
+            loading="eager"
+            id="modelo">
+        </model-viewer>
     </div>
     
-    <div class="info" id="infoPanel" style="display: none;">Apunta la cámara hacia una superficie plana o al marcador Hiro</div>
-    
-    <a-scene
-        id="arScene"
-        embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
-        renderer="logarithmicDepthBuffer: true;"
-        vr-mode-ui="enabled: false"
-        style="display: none;">
-        
-        <!-- Definir el marcador que activará el modelo -->
-        <a-marker type="pattern" preset="hiro">
-            <!-- Tu modelo GLB -->
-            <a-entity
-                id="oso-model"
-                position="0 0 0"
-                rotation="-90 0 0"
-                scale="0.5 0.5 0.5"
-                gltf-model="./oso.glb"
-                animation-mixer>
-            </a-entity>
-        </a-marker>
-        
-        <!-- También agregamos una detección de superficie para trabajar sin marcador -->
-        <a-entity
-            id="surface-oso"
-            position="0 0 -1"
-            rotation="-90 0 0"
-            scale="0.5 0.5 0.5"
-            gltf-model="./oso.glb"
-            animation-mixer
-            visible="false">
-        </a-entity>
-        
-        <a-entity camera></a-entity>
-    </a-scene>
+    <div class="loading" id="loadingScreen">
+        <h2>Visor 3D - Oso</h2>
+        <p>Cargando modelo 3D...</p>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const loadingScreen = document.getElementById('loadingScreen');
-            const startButton = document.getElementById('startButton');
             const errorMessage = document.getElementById('errorMessage');
-            const arScene = document.getElementById('arScene');
-            const infoPanel = document.getElementById('infoPanel');
-            const osoModel = document.getElementById('oso-model');
+            const modelViewer = document.querySelector('model-viewer');
             
-            // Verificar si AR es compatible con el dispositivo
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showError("Tu navegador no es compatible con AR. Intenta con Chrome o Safari en un dispositivo móvil más reciente.");
-                return;
-            }
-            
-            startButton.addEventListener('click', function() {
-                // Iniciar AR y solicitar permisos de cámara
-                arScene.style.display = 'block';
-                
-                // Mostrar panel de info después de iniciar
-                infoPanel.style.display = 'block';
-                
-                // Ocultar pantalla de carga después de un breve momento
-                // para dar tiempo a que AR.js inicie
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 3000);
-                
-                // Detectar errores de cámara
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .catch(function(error) {
-                        showError("No se pudo acceder a la cámara. Por favor, asegúrate de conceder permisos de cámara: " + error.message);
-                    });
+            // Verificar si el modelo se carga correctamente
+            modelViewer.addEventListener('load', function() {
+                console.log('Modelo cargado correctamente');
+                loadingScreen.style.display = 'none';
             });
             
-            // Detectar cuando el modelo se ha cargado
-            osoModel.addEventListener('model-loaded', function() {
-                console.log('¡Modelo cargado con éxito!');
+            // Mostrar errores
+            modelViewer.addEventListener('error', function(event) {
+                showError("Error al cargar el modelo. Verifica que el archivo 'oso.glb' exista y esté correctamente formateado.");
             });
             
-            // Detectar errores en el modelo
-            osoModel.addEventListener('model-error', function(event) {
-                showError("Error al cargar el modelo GLB. Verifica que el archivo 'oso.glb' esté en la misma carpeta que este HTML.");
-            });
+            // Timeout por si el modelo no carga en 10 segundos
+            setTimeout(function() {
+                if (loadingScreen.style.display !== 'none') {
+                    showError("El modelo está tardando en cargar. Verifica que el archivo 'oso.glb' exista en la misma carpeta que este HTML.");
+                }
+            }, 10000);
             
             // Función para mostrar mensajes de error
             function showError(message) {
                 errorMessage.innerHTML = message;
                 errorMessage.style.display = 'block';
-                if (startButton) startButton.style.display = 'none';
             }
-            
-            // Detectar si el contexto WebGL se ha perdido
-            window.addEventListener('webglcontextlost', function() {
-                showError("Se perdió el contexto WebGL. Intenta recargar la página.");
-            });
         });
     </script>
 </body>
