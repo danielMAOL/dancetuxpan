@@ -1,1 +1,94 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR GLB Viewer - Oso</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.2.2/aframe-ar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.2.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 999;
+            font-size: 14px;
+        }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .ar-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingScreen">Cargando modelo 3D...</div>
+    <div class="info">Apunta la cámara hacia una superficie plana</div>
+    
+    <a-scene
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
+        renderer="logarithmicDepthBuffer: true;"
+        vr-mode-ui="enabled: false">
+        
+        <!-- Definir el marcador que activará el modelo -->
+        <a-marker type="pattern" preset="hiro">
+            <!-- Tu modelo GLB -->
+            <a-entity
+                id="oso-model"
+                position="0 0 0"
+                rotation="-90 0 0"
+                scale="1 1 1"
+                gltf-model="./oso.glb"
+                animation-mixer>
+            </a-entity>
+        </a-marker>
+        
+        <a-entity camera></a-entity>
+    </a-scene>
+    
+    <script>
+        // Ocultar pantalla de carga cuando el modelo se haya cargado
+        document.querySelector('#oso-model').addEventListener('model-loaded', function() {
+            document.getElementById('loadingScreen').style.display = 'none';
+        });
+        
+        // Mensaje de error si hay problemas al cargar
+        document.querySelector('#oso-model').addEventListener('model-error', function() {
+            document.getElementById('loadingScreen').innerHTML = 'Error al cargar el modelo. Verifica la ruta del archivo.';
+        });
+    </script>
+</body>
+</html>
