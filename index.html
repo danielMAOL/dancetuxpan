@@ -30,34 +30,45 @@
             background-color: #ffffff;
         }
         
-        .instructions {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-            max-width: 80%;
-            z-index: 10;
-        }
-        
         .ar-button {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background-color: #4285F4;
+            bottom: 30px;
+            right: 30px;
+            background-color: #FF4500;
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 15px 30px;
             border-radius: 24px;
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
             z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .ar-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .arrow {
+            margin-left: 10px;
+            width: 0; 
+            height: 0; 
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 12px solid white;
         }
         
         .status-bar {
@@ -77,7 +88,7 @@
 </head>
 <body>
     <div class="status-bar" id="statusBar">
-        <!-- Status bar oculto por defecto -->
+        <!-- Status bar oculto -->
     </div>
     
     <div id="container">
@@ -97,19 +108,14 @@
             id="modelo">
         </model-viewer>
         
-        <div class="instructions" id="instructions">
-            Usa los controles para ver el modelo en 3D
-        </div>
-        
         <button class="ar-button" id="customArButton">
-            Ver en AR
+            VER EN AR <div class="arrow"></div>
         </button>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const statusBar = document.getElementById('statusBar');
-            const instructions = document.getElementById('instructions');
             const customArButton = document.getElementById('customArButton');
             const modelViewer = document.querySelector('model-viewer');
             
@@ -137,16 +143,6 @@
                     // Activar primera animación sin mostrar mensaje
                     modelViewer.animationName = animations[0];
                     modelViewer.play();
-                }
-            });
-            
-            // Manejar eventos AR
-            modelViewer.addEventListener('ar-status', event => {
-                if (event.detail.status === 'session-started') {
-                    instructions.classList.add('hidden');
-                }
-                if (event.detail.status === 'not-presenting') {
-                    instructions.classList.remove('hidden');
                 }
             });
         });
