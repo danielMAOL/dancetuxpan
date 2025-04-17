@@ -13,15 +13,13 @@
             height: 100vh;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
         }
         
         #container {
-            flex: 1;
             width: 100%;
-            background-color: #ffffff;
+            height: 100%;
             position: relative;
+            overflow: hidden;
         }
         
         model-viewer {
@@ -30,67 +28,66 @@
             background-color: #ffffff;
         }
         
-        .ar-button {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background-color: #FF4500;
+        /* Estilo mejorado para el botón VR/AR */
+        #vrButton {
+            position: fixed; /* Cambiado a fixed para asegurar la visibilidad */
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #FF0000; /* Rojo llamativo */
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 24px;
-            font-size: 18px;
+            border-radius: 50px;
+            padding: 20px 40px;
+            font-size: 24px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 10;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: pulse 2s infinite;
-            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 1000; /* Z-index muy alto para asegurar que esté al frente */
+            box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.5); /* Resplandor rojo */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: bounce 1.5s infinite;
         }
         
-        .ar-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        #vrButton::before {
+            content: "⟩"; /* Flecha */
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 28px;
+            animation: pointRight 1s infinite;
         }
         
-        .arrow {
+        #vrButton::after {
+            content: "⟨"; /* Flecha */
+            display: inline-block;
             margin-left: 10px;
-            width: 0; 
-            height: 0; 
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            border-left: 12px solid white;
+            font-size: 28px;
+            animation: pointLeft 1s infinite;
         }
         
-        .status-bar {
-            width: 100%;
-            padding: 10px;
-            background-color: #333;
-            color: white;
-            text-align: center;
-            font-size: 14px;
-            display: none;
+        @keyframes pointRight {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+        
+        @keyframes pointLeft {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="status-bar" id="statusBar">
-        <!-- Status bar oculto -->
-    </div>
-    
     <div id="container">
         <model-viewer 
             src="./oso.glb" 
@@ -108,31 +105,30 @@
             id="modelo">
         </model-viewer>
         
-        <button class="ar-button" id="customArButton">
-            VER EN AR <div class="arrow"></div>
-        </button>
+        <button id="vrButton">VR/AR</button>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const statusBar = document.getElementById('statusBar');
-            const customArButton = document.getElementById('customArButton');
+            const vrButton = document.getElementById('vrButton');
             const modelViewer = document.querySelector('model-viewer');
             
-            // Detectar si AR está disponible
-            if (!modelViewer.canActivateAR) {
-                // Ocultar el botón si AR no está disponible
-                customArButton.classList.add('hidden');
-            }
+            // Asegurarse de que el botón siempre sea visible
+            // incluso si AR no está disponible
             
-            // Botón AR personalizado
-            customArButton.addEventListener('click', function() {
+            // Botón VR/AR
+            vrButton.addEventListener('click', function() {
                 try {
                     // Intentar activar AR
-                    modelViewer.activateAR();
+                    if (modelViewer.canActivateAR) {
+                        modelViewer.activateAR();
+                    } else {
+                        // Si AR no está disponible, mostrar una alerta
+                        alert("La función de Realidad Aumentada no está disponible en este dispositivo");
+                    }
                 } catch (error) {
-                    // Manejo silencioso del error
                     console.error("Error al activar AR:", error);
+                    alert("No se pudo iniciar la Realidad Aumentada");
                 }
             });
             
@@ -140,11 +136,20 @@
             modelViewer.addEventListener('load', function() {
                 const animations = modelViewer.availableAnimations;
                 if (animations && animations.length > 0) {
-                    // Activar primera animación sin mostrar mensaje
                     modelViewer.animationName = animations[0];
                     modelViewer.play();
                 }
+                
+                // Asegurarse de que el botón sea visible después de cargar
+                setTimeout(() => {
+                    vrButton.style.display = 'block';
+                }, 1000);
             });
+            
+            // Forzar la visibilidad del botón después de un tiempo
+            setTimeout(() => {
+                vrButton.style.display = 'block';
+            }, 2000);
         });
     </script>
 </body>
