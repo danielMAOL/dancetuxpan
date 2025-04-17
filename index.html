@@ -12,7 +12,7 @@
       width: 100vw;
       height: 100vh;
       font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
+      background-color: #87CEEB; /* Azul cielo */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -20,12 +20,12 @@
       position: relative;
     }
     #container {
-      width: min(90%, 600px);
-      height: min(90%, 600px);
+      width: min(85%, 550px);
+      height: min(85%, 550px);
       position: relative;
-      border-radius: 10px;
+      border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     }
     model-viewer {
       width: 100%;
@@ -55,25 +55,25 @@
     }
     #creditButton {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: #FF7A00;
+      top: 12px;
+      right: 12px;
+      background-color: #0066CC; /* Azul */
       color: white;
       border: none;
-      border-radius: 5px;
-      padding: 8px 15px;
-      font-size: 14px;
+      border-radius: 4px;
+      padding: 5px 10px; /* Reducido de 8px 15px */
+      font-size: 11px; /* Reducido de 14px */
       font-weight: bold;
       cursor: pointer;
       z-index: 200;
-      box-shadow: 0 0 10px rgba(255,122,0,0.5);
+      box-shadow: 0 0 8px rgba(0,102,204,0.5);
       text-decoration: none;
       display: inline-block;
       animation: creditPulse 1.5s infinite;
     }
     @keyframes creditPulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,122,0,0.5); }
-      50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255,122,0,0.7); }
+      0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(0,102,204,0.5); }
+      50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(0,102,204,0.7); }
     }
     @supports (-webkit-touch-callout: none) {
       model-viewer {
@@ -179,4 +179,3 @@
   </script>
 </body>
 </html>
-
