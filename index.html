@@ -62,7 +62,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #1e6bc8;
+            background-color: #FF7A00; /* Color anaranjado */
             color: white;
             border: none;
             border-radius: 5px;
@@ -71,16 +71,22 @@
             font-weight: bold;
             cursor: pointer;
             z-index: 200;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255,122,0,0.5);
             text-decoration: none;
             display: inline-block;
+            animation: creditPulse 1.5s infinite;
         }
         
-        #creditButton:hover {
-            background-color: #1657a3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        @keyframes creditPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,122,0,0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255,122,0,0.7); }
+        }
+        
+        /* Estilos específicos para iOS */
+        @supports (-webkit-touch-callout: none) {
+            model-viewer {
+                --poster-color: transparent;
+            }
         }
     </style>
 </head>
@@ -91,6 +97,8 @@
         <model-viewer 
             src="./oso.glb" 
             ios-src="./oso.usdz"
+            ar-scale="fixed"
+            poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             alt="Modelo 3D Oso" 
             auto-rotate 
             camera-controls 
@@ -103,6 +111,11 @@
             animation-name="animación"
             autoplay
             id="modelo">
+            
+            <!-- Quick Look para iOS -->
+            <button slot="ar-button" id="ar-button">
+                Ver en tu espacio
+            </button>
         </model-viewer>
         
         <button id="vrButton">CLICK</button>
@@ -118,6 +131,7 @@
             const vrButton = document.getElementById('vrButton');
             const modelViewer = document.querySelector('model-viewer');
             const backgroundMusic = document.getElementById('backgroundMusic');
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             
             // Configurar el volumen
             backgroundMusic.volume = 0.5;
@@ -125,11 +139,35 @@
             // Pausar la música inicialmente para asegurarnos de que no suene
             backgroundMusic.pause();
             
+            // Detección de iOS y ajustes específicos
+            if (isIOS) {
+                console.log("Dispositivo iOS detectado - ajustando para AR Quick Look");
+                
+                // En iOS, la API de Quick Look no soporta evento AR status
+                // Pero podemos detectar cuando se abre la vista
+                document.addEventListener('visibilitychange', function() {
+                    if (document.hidden) {
+                        // Cuando el usuario cambia a Quick Look
+                        // No podemos reproducir música aquí debido a las restricciones de iOS
+                    } else {
+                        // Cuando el usuario regresa, suponemos que ya no está en AR
+                        backgroundMusic.pause();
+                        backgroundMusic.currentTime = 0;
+                    }
+                });
+            }
+            
             // Botón VR/AR
             vrButton.addEventListener('click', function() {
                 try {
                     // Intentar activar AR
                     if (modelViewer.canActivateAR) {
+                        // Si estamos en iOS, prepararse para la reproducción de audio
+                        // Esto no reproducirá el audio, pero "cargará" el contexto de audio
+                        if (isIOS) {
+                            backgroundMusic.play().catch(e => {});
+                            backgroundMusic.pause();
+                        }
                         modelViewer.activateAR();
                     } else {
                         // Si AR no está disponible, mostrar una alerta
@@ -150,25 +188,27 @@
                 }
             });
             
-            // Manejar la música durante la experiencia AR
-            modelViewer.addEventListener('ar-status', function(event) {
-                if (event.detail.status === 'session-started') {
-                    // Cuando comienza AR, reproducir la música
-                    backgroundMusic.play().catch(e => {
-                        console.error("Error al reproducir audio en AR:", e);
-                        
-                        // Intentar reproducir después de una interacción del usuario en AR
-                        document.addEventListener('touchstart', function startAudioOnTouch() {
-                            backgroundMusic.play().catch(e => console.error("Error en reproducción táctil:", e));
-                            document.removeEventListener('touchstart', startAudioOnTouch);
-                        }, { once: true });
-                    });
-                } else if (event.detail.status === 'not-presenting') {
-                    // Cuando termina AR, detener la música
-                    backgroundMusic.pause();
-                    backgroundMusic.currentTime = 0; // Reiniciar al principio
-                }
-            });
+            // Manejar la música durante la experiencia AR en dispositivos no-iOS
+            if (!isIOS) {
+                modelViewer.addEventListener('ar-status', function(event) {
+                    if (event.detail.status === 'session-started') {
+                        // Cuando comienza AR, reproducir la música
+                        backgroundMusic.play().catch(e => {
+                            console.error("Error al reproducir audio en AR:", e);
+                            
+                            // Intentar reproducir después de una interacción del usuario en AR
+                            document.addEventListener('touchstart', function startAudioOnTouch() {
+                                backgroundMusic.play().catch(e => console.error("Error en reproducción táctil:", e));
+                                document.removeEventListener('touchstart', startAudioOnTouch);
+                            }, { once: true });
+                        });
+                    } else if (event.detail.status === 'not-presenting') {
+                        // Cuando termina AR, detener la música
+                        backgroundMusic.pause();
+                        backgroundMusic.currentTime = 0; // Reiniciar al principio
+                    }
+                });
+            }
         });
     </script>
 </body>
