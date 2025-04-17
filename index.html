@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visor 3D AR - Oso</title>
+    <title>Visor 3D AR - Oso con Imagen</title>
     <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         body {
@@ -13,13 +13,35 @@
             height: 100vh;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
+            overflow: hidden;
         }
         
-        #container {
+        #main-container {
+            display: flex;
             width: 100%;
             height: 100%;
+        }
+        
+        #model-container {
+            width: 50%;
+            height: 100%;
             position: relative;
+        }
+        
+        #image-container {
+            width: 50%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
+        }
+        
+        #image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
         
         model-viewer {
@@ -28,22 +50,22 @@
             background-color: #ffffff;
         }
         
-        /* Estilo mejorado para el botón VR/AR */
+        /* Estilo para el botón VR/AR */
         #vrButton {
-            position: fixed;
-            bottom: 50px;
+            position: absolute;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background-color: #00B300; /* Verde */
             color: white;
             border: none;
             border-radius: 50px;
-            padding: 20px 40px;
-            font-size: 24px;
+            padding: 15px 30px;
+            font-size: 22px;
             font-weight: bold;
             cursor: pointer;
             z-index: 1000;
-            box-shadow: 0 0 20px 5px rgba(0, 179, 0, 0.5); /* Resplandor verde */
+            box-shadow: 0 0 15px 3px rgba(0, 179, 0, 0.5); /* Resplandor verde */
             text-transform: uppercase;
             letter-spacing: 2px;
             animation: bounce 1.5s infinite;
@@ -55,18 +77,18 @@
         }
         
         #vrButton::before {
-            content: "⟩"; /* Flecha */
+            content: "⟩";
             display: inline-block;
             margin-right: 10px;
-            font-size: 28px;
+            font-size: 24px;
             animation: pointRight 1s infinite;
         }
         
         #vrButton::after {
-            content: "⟨"; /* Flecha */
+            content: "⟨";
             display: inline-block;
             margin-left: 10px;
-            font-size: 28px;
+            font-size: 24px;
             animation: pointLeft 1s infinite;
         }
         
@@ -82,37 +104,75 @@
             100% { transform: translateX(0); }
         }
         
-        .hidden {
-            display: none !important;
+        /* Diseño responsivo para dispositivos móviles */
+        @media (max-width: 768px) {
+            #main-container {
+                flex-direction: column;
+            }
+            
+            #model-container, #image-container {
+                width: 100%;
+                height: 50%;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <model-viewer 
-            src="./oso.glb" 
-            ios-src="./oso.usdz"
-            alt="Modelo 3D Oso" 
-            auto-rotate 
-            camera-controls 
-            ar 
-            ar-modes="webxr scene-viewer quick-look" 
-            environment-image="neutral" 
-            shadow-intensity="1" 
-            exposure="1" 
-            loading="eager"
-            animation-name="animación"
-            autoplay
-            id="modelo">
-        </model-viewer>
+    <div id="main-container">
+        <!-- Contenedor del modelo 3D (izquierda) -->
+        <div id="model-container">
+            <model-viewer 
+                src="./oso.glb" 
+                ios-src="./oso.usdz"
+                alt="Modelo 3D Oso" 
+                auto-rotate 
+                camera-controls 
+                ar 
+                ar-modes="webxr scene-viewer quick-look" 
+                environment-image="neutral" 
+                shadow-intensity="1" 
+                exposure="1" 
+                loading="eager"
+                animation-name="animación"
+                autoplay
+                id="modelo">
+            </model-viewer>
+            
+            <button id="vrButton">CLICK</button>
+        </div>
         
-        <button id="vrButton">CLICK</button>
+        <!-- Contenedor de la imagen (derecha) -->
+        <div id="image-container">
+            <img id="image" src="./imagen.jpg" alt="Imagen descriptiva">
+        </div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const vrButton = document.getElementById('vrButton');
             const modelViewer = document.querySelector('model-viewer');
+            const image = document.getElementById('image');
+            
+            // Manejar posibles errores de carga de la imagen
+            image.onerror = function() {
+                // Intentar con diferentes extensiones si la original falla
+                const extensions = ['png', 'jpeg', 'gif', 'webp'];
+                let currentExtension = 'jpg';
+                
+                const tryNextExtension = function() {
+                    const index = extensions.indexOf(currentExtension);
+                    if (index < extensions.length - 1) {
+                        currentExtension = extensions[index + 1];
+                        image.src = './imagen.' + currentExtension;
+                    } else {
+                        // Si todas las extensiones fallan, mostrar un placeholder
+                        image.src = '/api/placeholder/800/600';
+                        image.alt = 'Imagen no disponible';
+                    }
+                };
+                
+                tryNextExtension();
+            };
             
             // Botón VR/AR
             vrButton.addEventListener('click', function() {
@@ -137,17 +197,7 @@
                     modelViewer.animationName = animations[0];
                     modelViewer.play();
                 }
-                
-                // Asegurarse de que el botón sea visible después de cargar
-                setTimeout(() => {
-                    vrButton.style.display = 'block';
-                }, 1000);
             });
-            
-            // Forzar la visibilidad del botón después de un tiempo
-            setTimeout(() => {
-                vrButton.style.display = 'block';
-            }, 2000);
         });
     </script>
 </body>
