@@ -122,20 +122,8 @@
             // Configurar el volumen
             backgroundMusic.volume = 0.5;
             
-            // Función que intenta reproducir música
-            function playMusic() {
-                backgroundMusic.play().catch(e => {
-                    console.log("Autoplay bloqueado - esperando interacción del usuario");
-                    // Agregar un listener de evento para comenzar la reproducción después de la interacción del usuario
-                    document.addEventListener('click', function onClickToPlay() {
-                        backgroundMusic.play().catch(e => console.error("Error al reproducir:", e));
-                        document.removeEventListener('click', onClickToPlay);
-                    }, { once: true });
-                });
-            }
-            
-            // Intentar reproducir la música automáticamente
-            playMusic();
+            // Pausar la música inicialmente para asegurarnos de que no suene
+            backgroundMusic.pause();
             
             // Botón VR/AR
             vrButton.addEventListener('click', function() {
@@ -165,8 +153,20 @@
             // Manejar la música durante la experiencia AR
             modelViewer.addEventListener('ar-status', function(event) {
                 if (event.detail.status === 'session-started') {
-                    // Cuando comienza AR, asegurarse de que la música sigue sonando
-                    playMusic();
+                    // Cuando comienza AR, reproducir la música
+                    backgroundMusic.play().catch(e => {
+                        console.error("Error al reproducir audio en AR:", e);
+                        
+                        // Intentar reproducir después de una interacción del usuario en AR
+                        document.addEventListener('touchstart', function startAudioOnTouch() {
+                            backgroundMusic.play().catch(e => console.error("Error en reproducción táctil:", e));
+                            document.removeEventListener('touchstart', startAudioOnTouch);
+                        }, { once: true });
+                    });
+                } else if (event.detail.status === 'not-presenting') {
+                    // Cuando termina AR, detener la música
+                    backgroundMusic.pause();
+                    backgroundMusic.currentTime = 0; // Reiniciar al principio
                 }
             });
         });
