@@ -30,11 +30,11 @@
         
         /* Estilo mejorado para el botón VR/AR */
         #vrButton {
-            position: fixed; /* Cambiado a fixed para asegurar la visibilidad */
+            position: fixed;
             bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #FF0000; /* Rojo llamativo */
+            background-color: #00B300; /* Verde */
             color: white;
             border: none;
             border-radius: 50px;
@@ -42,8 +42,8 @@
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 1000; /* Z-index muy alto para asegurar que esté al frente */
-            box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.5); /* Resplandor rojo */
+            z-index: 1000;
+            box-shadow: 0 0 20px 5px rgba(0, 179, 0, 0.5); /* Resplandor verde */
             text-transform: uppercase;
             letter-spacing: 2px;
             animation: bounce 1.5s infinite;
@@ -91,6 +91,7 @@
     <div id="container">
         <model-viewer 
             src="./oso.glb" 
+            ios-src="./oso.usdz"
             alt="Modelo 3D Oso" 
             auto-rotate 
             camera-controls 
@@ -105,16 +106,13 @@
             id="modelo">
         </model-viewer>
         
-        <button id="vrButton">VR/AR</button>
+        <button id="vrButton">CLICK</button>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const vrButton = document.getElementById('vrButton');
             const modelViewer = document.querySelector('model-viewer');
-            
-            // Asegurarse de que el botón siempre sea visible
-            // incluso si AR no está disponible
             
             // Botón VR/AR
             vrButton.addEventListener('click', function() {
