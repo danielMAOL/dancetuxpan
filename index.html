@@ -48,8 +48,7 @@
         .ar-button {
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 20px;
             background-color: #4285F4;
             color: white;
             border: none;
@@ -68,6 +67,7 @@
             color: white;
             text-align: center;
             font-size: 14px;
+            display: none;
         }
         
         .hidden {
@@ -77,7 +77,7 @@
 </head>
 <body>
     <div class="status-bar" id="statusBar">
-        Modelo cargado. Utiliza el botón para ver en AR.
+        <!-- Status bar oculto por defecto -->
     </div>
     
     <div id="container">
@@ -98,11 +98,11 @@
         </model-viewer>
         
         <div class="instructions" id="instructions">
-            Toca el botón "Ver en AR" cuando aparezca en la esquina inferior derecha.
+            Usa los controles para ver el modelo en 3D
         </div>
         
         <button class="ar-button" id="customArButton">
-            Activar AR
+            Ver en AR
         </button>
     </div>
     
@@ -114,12 +114,9 @@
             const modelViewer = document.querySelector('model-viewer');
             
             // Detectar si AR está disponible
-            if (modelViewer.canActivateAR) {
-                statusBar.textContent = "AR disponible - Toca el botón para activar";
-            } else {
-                statusBar.textContent = "AR no disponible en este dispositivo";
-                customArButton.textContent = "AR no compatible";
-                customArButton.disabled = true;
+            if (!modelViewer.canActivateAR) {
+                // Ocultar el botón si AR no está disponible
+                customArButton.classList.add('hidden');
             }
             
             // Botón AR personalizado
@@ -127,9 +124,9 @@
                 try {
                     // Intentar activar AR
                     modelViewer.activateAR();
-                    statusBar.textContent = "Activando AR...";
                 } catch (error) {
-                    statusBar.textContent = "Error al activar AR: " + error.message;
+                    // Manejo silencioso del error
+                    console.error("Error al activar AR:", error);
                 }
             });
             
@@ -137,28 +134,18 @@
             modelViewer.addEventListener('load', function() {
                 const animations = modelViewer.availableAnimations;
                 if (animations && animations.length > 0) {
-                    statusBar.textContent = `Modelo cargado con ${animations.length} animación(es)`;
-                    // Activar primera animación
+                    // Activar primera animación sin mostrar mensaje
                     modelViewer.animationName = animations[0];
                     modelViewer.play();
-                } else {
-                    statusBar.textContent = "Modelo cargado sin animaciones";
                 }
-            });
-            
-            // Detectar errores
-            modelViewer.addEventListener('error', function(event) {
-                statusBar.textContent = "Error al cargar el modelo";
             });
             
             // Manejar eventos AR
             modelViewer.addEventListener('ar-status', event => {
                 if (event.detail.status === 'session-started') {
-                    statusBar.textContent = "Sesión AR iniciada";
                     instructions.classList.add('hidden');
                 }
                 if (event.detail.status === 'not-presenting') {
-                    statusBar.textContent = "AR no está presentando";
                     instructions.classList.remove('hidden');
                 }
             });
