@@ -88,6 +88,11 @@
                 --poster-color: transparent;
             }
         }
+        
+        /* Ocultar el texto del botón AR predeterminado */
+        model-viewer::part(ar-button) {
+            font-size: 0;
+        }
     </style>
 </head>
 <body>
@@ -97,7 +102,7 @@
         <model-viewer 
             src="./oso.glb" 
             ios-src="./oso.usdz"
-            ar-scale="fixed"
+            ar-scale="auto"
             poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
             alt="Modelo 3D Oso" 
             auto-rotate 
@@ -112,10 +117,8 @@
             autoplay
             id="modelo">
             
-            <!-- Quick Look para iOS -->
-            <button slot="ar-button" id="ar-button">
-                Ver en tu espacio
-            </button>
+            <!-- Botón AR vacío (sin texto) -->
+            <button slot="ar-button" id="ar-button"></button>
         </model-viewer>
         
         <button id="vrButton">CLICK</button>
